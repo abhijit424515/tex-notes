@@ -1,0 +1,68 @@
+\documentclass{report}
+\usepackage[a4paper, portrait, top=20mm, left=20mm, right=20mm, bottom=20mm]{geometry}
+\usepackage{graphicx,wrapfig,amsmath} 
+
+\title{Linear Algebra}
+\author{Abhijit Amrendra Kumar}
+\date{August 2023}
+
+\begin{document}
+
+\maketitle
+
+\chapter{Introduction}
+\section{Definitions}
+\begin{itemize}
+  \item \textbf{Matrix}: A matrix $A_{m \times n}$ is a rectangular array of real/complex numbers. More precisely, $$A_{m \times n} = [a_{j,k}], 1 \leq j \leq m, 1 \leq k \leq n$$
+  \item \textbf{Tensors}: A tensor $A_{i_1\times i_2 \times ...i_k}$ is a k-dimensional array of real/complex numbers. \item \textbf{Transpose}: A matrix $B_{n \times m} = [b_{rs}]$ is the transpose of matrix $A_{m \times n} = [a_{jk}]$ iff $$b_{rs} = a_{sr}; 1 \leq r \leq n, 1 \leq s \leq m$$
+        \begin{itemize}
+          \item Denoted by $B = A^T$
+        \end{itemize}
+  \item \textbf{Symmetric Matrix}: A matrix $A_{m \times m} = [a_{jk}]$ is symmetric iff $$a_{jk} = a_{kj}, \ \forall j,k \ 1 \leq j,k \leq m$$
+        \begin{itemize}
+          \item Equivalently, $A = A^T$
+          \item \textbf{Skew-Symmetric Matrix}: $A = -A^T$
+        \end{itemize}
+  \item \textbf{Scalar Multiplication}: $\lambda A = [\lambda a_{jk}]$
+  \item \textbf{Dot Product}: Given column vectors $v_{n \times 1}, w_{n \times 1}$, the dot product is defined as $$\langle v,w \rangle = \underset{i}{\sum} v_iw_i$$
+        \begin{itemize}
+          \item Also denoted by $v \cdot w$
+        \end{itemize}
+  \item \textbf{Matrix Product}: Given matrices $A_{p \times q}, B_{q \times r}$, the matrix product $C_{p \times r}$ is defined as $$c_{i,k} = \underset{j}{\sum} a_{i,j}b_{j,k}; \quad 1 \leq i \leq p, 1 \leq j \leq q, 1 \leq k \leq r$$
+        \begin{itemize}
+          \item Denoted by $C = AB$
+        \end{itemize}
+  \item \textbf{Hadamard Product}: Given matrices $A_{p\times q}, B_{p\times q}$, the hadamard product $C = A\odot B$ is defined as $$c_{i,j} = a_{i,j}b_{i,j}; \quad 1 \leq i \leq p, 1 \leq j \leq q$$
+  \item \textbf{Matrix Inverse}: Given a square matrix $A$, the matrix inverse $A^{-1}$ is defined such that $A^{-1}A = I_n$
+\end{itemize}
+
+\section{Theorems}
+\begin{itemize}
+  \item \textbf{Associativity}: Given matrices $A_{p \times q}, B_{q \times r}, C_{r \times s}$, $$A(BC) = (AB)C$$
+  \item \textbf{Distributive}: Given matrices $A_{p \times q}, B_{q \times r}, C_{q \times r}$, $$A(B+C) = AB+AC$$
+  \item \textbf{Transpose of a Product}: $(AB)^T = B^TA^T$
+  \item
+\end{itemize}
+
+% \subsection{Vectors}
+% \begin{itemize}
+%     \item \textbf{$L^p$ Norm}: Given a vector $x$, it's $L^p$ norm $||x||_p$ is defined by $$||x||_p = \Bigl(\underset{i}{\sum} |x_i|^p\Bigl)^{1/p}$$
+%     \begin{itemize}
+%         \item \textbf{Max norm}: $||x||_{\infty} = \underset{i}{\text{max}} |x_i|$
+%         \item \textbf{Frobenius norm (matrix)}: $||A||_F = \sqrt{\underset{i,j}{\sum} A^2_{i,j}}$
+%     \end{itemize}
+%     \item \textbf{Unit Vector}: $||x||_2 = 1$
+%     \item \textbf{Dot Product}: Given vectors $x,y$ of same dimensions, the dot product $\langle x,y \rangle$ is given by $$\langle x,y \rangle = \underset{i}{\sum} x_iy_i$$
+%     \begin{itemize}
+%         \item \textbf{Orthogonal Vectors}: $\langle x,y \rangle = 0$
+%     \end{itemize}
+% \end{itemize}
+
+% \subsection{Matrices}
+% \begin{itemize}
+%     \item \textbf{Diagonal Matrix}: A matrix $A_{m\times n}$ is a diagonal matrix iff $A_{i,j} = 0 \ \forall \ i \neq j$
+%     \item \textbf{Symmetrix Matrix}: $A = A^T$
+%     \item \textbf{Orthogonal Matrix}: $AA^T = A^TA = I$
+% \end{itemize}
+
+\end{document}

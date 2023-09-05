@@ -1,0 +1,261 @@
+\documentclass{report}
+\usepackage[a4paper, portrait, top=20mm, left=20mm, right=20mm, bottom=20mm]{geometry}
+\usepackage{graphicx,wrapfig,amsmath,amssymb,algorithm,algpseudocode,caption,subcaption,hyperref,enumitem,tikz} 
+
+\title{Automata Theory}
+\author{Abhijit Amrendra Kumar}
+\date{August 2023}
+
+\setlength\parindent{0pt}
+
+\begin{document}
+
+\maketitle
+
+\chapter{Introduction}
+\section{Abstract}
+
+Automata theory involves the study of systems of computations.
+\begin{itemize}[leftmargin=0.2in]
+  \item (formal verification) What are the properties of a concrete algorithm given in a system of computation? What methods can be used to analyse such questions?
+  \item (expressivity) What kind of calculations are possible in a system of computation? Can system A compute everything that is computable in system B?
+  \item (computability) Is a problem solvable in given system of computation?
+\end{itemize}
+
+Some larger questions include
+\begin{itemize}[leftmargin=0.2in]
+  \item Is there a most powerful system of mechanical computation ?
+  \item Are there problems which cannot be mechanically solved ?
+\end{itemize}
+
+\section{Course Syllabus}
+\begin{itemize}[leftmargin=0.2in]
+  \item \textbf{Finite State Automata}
+        \begin{itemize}[leftmargin=0.2in]
+          \item Deterministic Finite Automata (DFA) and its uses.
+          \item DFA, NFA and Equivalence
+          \item Closure Properties and Decision Problems
+          \item Regular Expressions and Equivalence to DFA
+          \item Homomorphisms
+          \item DFA minization
+          \item Pumping Lemma
+          \item Myhill Nerode Theorem
+        \end{itemize}
+  \item \textbf{Pushdown Automata and Context-Free Languages}
+        \begin{itemize}[leftmargin=0.2in]
+          \item Phrase structured Grammars and Chomsky Hiearchy
+          \item Context Free Grammars (CFG), Uses of CFG, Normal forms
+          \item Push Down Automata (PDA)
+          \item Equivalence of CFG and PDA
+        \end{itemize}
+  \item \textbf{Turing Machines and Computability}
+        \begin{itemize}[leftmargin=0.2in]
+          \item Definition and Examples of Turing Machines
+          \item Robustness (Multihead TM, Nondeterministic TM)
+          \item Universal Turing Machines
+          \item Halting Problem and Undecidability
+          \item Variety of Unsolvable Problems
+          \item Many-to-One reductions
+          \item Rice Theorem
+        \end{itemize}
+\end{itemize}
+
+\section{References}
+\begin{itemize}
+  \item \href{https://cse.iitb.ac.in/~pandya58/CS310/automata.html}{Course Webpage}
+  \item Dexter Kozen, Automata and Computability. Springer, 1997.
+  \item Hopcroft, Motwani, Ullman, Introduction to Automata Theory, Languages and Computation, PearsonEducation Asia, 2006.
+\end{itemize}
+
+% ----------------------------------------------------------------
+
+\chapter{Words and Languages, Deterministic Finite Automata}
+
+\section{Decision Problems and Automata}
+
+A decision problem is a problem which has \verb|yes| or \verb|no| as answer.
+
+\subsection{What is an Automaton ?}
+
+Consider a set of input instances \verb|A| and a subset \verb|B| of \verb|A| which only contains instances for which the answer is \verb|yes|. An \textbf{automaton} for $(A,B)$ is a machine which can solve any given instance $x \in A$ of the decision problem: given $x \in A$, determine whether $x \in B$.
+
+\subsection{Problem Instances as Strings}
+
+To give input to an automaton, we will use strings of symbols.
+\begin{itemize}[leftmargin=0.2in]
+  \item Alphabet $\Sigma$: A finite set of symbols/letters.
+        \begin{itemize}
+          \item Ex. $\Sigma = \{0,1\}$
+          \item We will use $a,b,c,...$ to denote letters.
+        \end{itemize}
+  \item Word over an alphabet $\Sigma$ is a finite sequence of symbols from $\Sigma$.
+        \begin{itemize}[leftmargin=0.2in]
+          \item Ex. $01001$
+          \item We will use $x,y,z,...$ to denote words.
+        \end{itemize}
+  \item $\Sigma^*$ denotes the set of all words over the alphabet $\Sigma$.
+  \item $\epsilon$ denotes the empty word.
+  \item $|x|$ denotes the length of word $x$.
+        \begin{itemize}[leftmargin=0.2in]
+          \item Ex. $|101101| = 6$
+          \item $|\epsilon| = 0$
+        \end{itemize}
+  \item Catenation of 2 words $x,y$ is denoted by $x \cdot y$.
+        \begin{itemize}[leftmargin=0.2in]
+          \item Ex. $ab \cdot abba = ababba$
+          \item $|x \cdot y| = |x| + |y|$
+          \item $x\cdot (y \cdot z) = (x \cdot y) \cdot z$
+          \item $\epsilon \cdot x = x \cdot \epsilon = x$
+          \item $x^{n+1} = (x^n) \cdot x$
+        \end{itemize}
+\end{itemize}
+
+\section{Language}
+
+A \textbf{Language} over an alphabet $\Sigma$ is any subset of $\Sigma^*$.
+
+\begin{itemize}[leftmargin=0.2in]
+  \item We use $A,B,C,...$ to denote languages
+  \item We use $\#a(x)$ to denote the count of $a$ in $x$
+\end{itemize}
+
+\begin{itemize}[leftmargin=0.2in]
+  \item Here are some examples
+        \begin{itemize}[leftmargin=0.2in]
+          \item $A = \{ a^p \ | \ p \text{ is a prime} \}$
+          \item $A = \{ x \in \{0,1\}^* \ | \ \#0(x) = \#1(x) \}$
+          \item $A = \{ x \in \{0,1\}^* \ | \ \exists i \in \mathbb{N}, \ x\text{ is the binary representation of } 2^i \}$
+        \end{itemize}
+\end{itemize}
+
+\subsection{Operations on Languages}
+
+Let $A,B$ be languages over an alphabet $\Sigma$.
+\begin{itemize}[leftmargin=0.2in]
+  \item $A \cup B = \{ x \in \Sigma^* \ | \ x \in A \text{ or } x \in B \}$
+  \item $A \cap B = \{ x \in \Sigma^* \ | \ x \in A \text{ and } x \in B \}$
+  \item $\sim A = \{ x \in \Sigma^* \ | \ x \notin B \}$
+  \item $A \cdot B = \{ x \cdot y \ | \ x \in A \text{ and } y \in B \}$
+        \begin{itemize}[leftmargin=0.2in]
+          \item Ex. $A = \{a,ab\}, B = \{b,ba\} \implies A \cdot B = \{ ab,aba,abb,abba \}$
+        \end{itemize}
+\end{itemize}
+
+\begin{itemize}[leftmargin=0.2in]
+  \item \textbf{Language Recognition Problem}: Given an input word $x$, determine whether $x \in A$.
+  \item All computational problems can be encoded into language recognition problems
+  \item Each automaton defines a language
+\end{itemize}
+
+\section{Deterministic Finite Automata}
+
+A DFA is given by $Q,\Sigma,\delta,q_0,F$, where
+\begin{itemize}
+  \item $Q$ is the set of states
+  \item $\Sigma$ is the set of alphabets
+  \item $\delta: Q \times \Sigma \rightarrow Q$ is the transition function
+  \item $q_0 \in Q$ is the initial state
+  \item $F \subseteq Q$ is the set of final states
+\end{itemize}
+
+A DFA can also be represented by either a transition table, or via a transition diagram.
+
+% DIAGRAM
+\begin{itemize}
+  \item A run of DFA $A$ on $x = a_0,a_1,...,a_{n-1}$ is a sequence of states $q_0,q_1,...q_n$ s.t $q_i \overset{a_i}{\rightarrow} q_{i+1}$ for $0 \leq i < n$.
+  \item For a given word $x$, DFAs have unique runs.
+  \item A run is accepting if last state $q_n \in F$
+  \item A word is accepted by an automaton if it's run is accepting
+\end{itemize}
+
+Language accepted by an automaton $A$ can also be defined as
+$$
+  L(A) = \{ u \in \Sigma^* | \text{ The run of A on u is accepting } \}
+$$
+A language is called \textbf{regular} if it is accepted by some DFA.
+
+\subsection{Big Step Semantics}
+
+Given DFA with transition function $\delta: Q \times \Sigma \rightarrow Q$, we can define an extended transition function
+$$
+  \hat{\delta}: Q \times \Sigma^* \rightarrow Q
+$$
+
+Here, $\hat{\delta}(q,x)$ gives the last state of the run of A on word $x$ starting from state $q$. It can be defined inductively as follows
+\begin{align*}
+  \hat{\delta}(q,\epsilon) & = q,                           \\
+  \hat{\delta}(q,ua)       & = \delta(\hat{\delta}(q,u),a), \\
+\end{align*}
+
+A word $x$ is accepted by an automaton $A$ iff $\hat{\delta}(q_0,x) \in F$ \\
+
+\textbf{Theorem}: $$\hat{\delta}(q,xy) = \hat{\delta}(\hat{\delta(q,x)},y)$$
+
+\textbf{Proof}:
+
+\section{Constructions on Automata}
+
+
+% ----------------------------------------------------------------
+
+\chapter{Regular Expressions}
+\section{Automata to RegExp}
+
+\textbf{Theorem}:
+
+For every NFA $A = (Q,\Sigma,\Delta,I,F)$, we can construct a language equivalent regular expression $reg(A)$ \\
+
+\textbf{Proof}: \\
+
+\textbf{Construction}:
+
+Define regular expression $\alpha_{p,q}^{X}$ for $X \subseteq Q, \quad p,q \in Q$. This set of words $w$ such that $A$ has a run on $w$ from $p$ to $q$, where all the intermediate states are from $X$. \\
+
+\textbf{Examples}:
+$$
+  \alpha_{p,q}^{r} = 1 \cdot 0 \qquad \qquad \qquad \alpha_{p,r}^{p,q} = 0^* \cdot 1 \cdot 0
+$$
+
+Let's try to compute $\alpha_{p,p}^{p,q,r}$. \\
+
+$\alpha_{p,r}^X$ can be recursively
+
+% ----------------------------------------------------------------
+
+\chapter{Minimizing DFA}
+
+\begin{center}
+  \includegraphics[scale=0.5]{images/mul_dfa.png}
+\end{center}
+
+There can be multiple DFAs recognizing the same language. Hence the question arises as to if there exists a minimum DFA which can recognize the same language, and if so, how to find it. \\
+
+We already know that $\epsilon$-NFA to DFA conversion often gives rise to large automaton which are not guaranteed to be optimal in size. The same is true when converting regular expressions to DFA. \\
+
+Let's consider some examples to notice some patterns.
+
+\begin{center}
+  \includegraphics[scale=0.5]{images/large-auto-1.png}
+\end{center}
+
+Here's the minimal DFA for the language defined by the above DFA.
+
+\begin{center}
+  \includegraphics[scale=0.5]{images/minimised-auto-1.png}
+\end{center}
+
+To minimise a DFA, let's first define the following: \\
+
+\textbf{Equivalent States in a DFA}:
+
+Two states $p,q$ in an DFA are said to be equivalent states (denoted by $p\approx q$) if
+$$ p\approx q \ \overset{\text{def}}{=} \ \forall x \in \Sigma^* (\hat{\delta}(p,x) \in F \iff \hat{\delta}(q,x) \in F)$$
+
+The proposition $\approx$ is an equivalence relation
+\begin{itemize}
+  \item $\forall p, \ p \approx p$
+  \item $\forall p,q, \ p \approx q \implies q \approx p $
+  \item $\forall p,q,r, \ p \approx q \land q \approx r \implies p \approx r$
+\end{itemize}
+
+\end{document}
