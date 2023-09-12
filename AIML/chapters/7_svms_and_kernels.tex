@@ -1,0 +1,124 @@
+\chapter{SVMs and Kernels}
+
+\section{SVM Optimization Problem}
+
+The generic constraint optimization problem is as follows:
+$$
+  \underset{w}{\operatorname{min}} \ f(w), \text{ s.t } \ g_1(w) \leq 0, g_2(w) \leq 0, ..., g_n(w) \leq 0
+$$
+
+Lagrangian:
+$$
+  L(w,\alpha) = f(w) + \sum_{i=1}^n g_i(w)
+$$
+
+where $\alpha$ denotes the langrangian multipliers. \\
+
+Equivalent formulation to the primal problem is as follows:
+$$
+  p^* = \underset{w}{\operatorname{min}} \ \underset{\alpha \geq 0}{\operatorname{max}} L(w,\alpha) \qquad \text{[removing constraints on w]}
+$$
+
+Why the equivalence ?
+$$
+  \underset{\alpha \geq 0}{\operatorname{max}} f(w) + \sum_i \alpha_i g_i(w) = \begin{cases}
+    f(w), \ \text{if w satisfies all constraints} \\
+    \infty, \ \text{otherwise}
+  \end{cases}
+$$
+
+\hrule
+\vspace{4mm}
+
+Consider the DUAL problem:
+$$
+  d^* = \underset{\alpha \geq 0}{\operatorname{max}} \ \underset{w}{\operatorname{min}} L(w,\alpha)
+$$
+
+In general, $d^* \leq p^*$, but for the SVM problem $d^* = p^*$ \\
+
+Dual form for the SVM
+$$
+  \underset{\alpha \geq 0}{\operatorname{max}} \ \sum_i \alpha_i - \frac{1}{2} \sum_{i,j} {\alpha_i\alpha_j y_iy_jx_i^\top x_j}, \text{ s.t } \forall \ i, \alpha_i \geq 0, \sum_i \alpha_iy_i = 0 \qquad \text{(Hard-margin SVM)}
+$$
+$$
+  \boxed{w = \sum_{i=1}^N {\alpha_iy_ix_i}} \qquad \text{ falls out of the dual construction}
+$$
+
+In the dual form of the soft-margin SVM, only the constraints turn out to be $0 \leq \alpha_i \leq c_i$. \\
+
+Observations based on the dual form:
+\begin{enumerate}
+  \item Via constructing the dual, we find
+        $$
+          \boxed{w = \sum_{i=1}^n \alpha_iy_ix_i}
+        $$
+  \item If the solution to the primal problem is $w^*$, and the solution to the dual problem is $\alpha^*$, the the KKT conditions on $w^*,\alpha^*$ hold for the SVM problems. One of them, the dual-complemantary constraint, is of most interest to us:
+        $$
+          \boxed{\alpha^* g_i(w^*) = 0, \forall i}
+        $$
+        $\alpha_i > 0$ corresponds to those training examples for which $g_i(w) = 0$
+        $$
+          g_i(w) = 0 \implies y_i(w^\top x_i + b) = 1
+        $$
+
+        These are exactly the SUPPORT VECTORS.
+
+  \item The dual form operates on the inner products of training instance pairs
+        $$
+          \underset{\alpha_i}{\operatorname{max}} \ \sum_i \alpha_i - \frac{1}{2} \sum_{i,j} {\alpha_i\alpha_jy_iy_jx_i^\top x_j}, \text{ s.t } \alpha_i \leq 0, \sum_i{\alpha_iy_i} = 0
+        $$
+\end{enumerate}
+
+During the testing phase with the SVM classifiers,
+\begin{align*}
+  \text{Prediction} \  & = \operatorname{sign}(w^{*^\top}x + b^*)                                 \\
+                       & = \operatorname{sign}\bigg(\sum_i{\alpha_i^* y_i x_i^\top x} + b^*\bigg)
+\end{align*}
+
+If we want a non-linear decision boundary using SVMs,
+$$
+  \text{Prediction} \ = \operatorname{sign}\bigg(\sum_i{\alpha_i^* y_i \phi(x_i)^\top \phi(x)} + b^*\bigg)
+$$
+
+Now, we are faced with two problem:
+\begin{enumerate}
+  \item How do I find $\phi(x)$ ?
+  \item Computationally very expensive to enumerate $\phi(x)$ and compute the dot product.
+\end{enumerate}
+
+\section{Kernels}
+Consider a kernel function $K(x,y) = \phi(x)^\top \phi(y)$. \\
+
+The kernel "trick" involves computing $K(x,y)$ wihout computing $\phi(x)$. Consider the following example for instances $x = (x_1,x_2), y = (y_1,y_2)$
+$$
+  \phi(x) = \phi((x_1,x_2)) = \begin{bmatrix}
+    x_1^2          \\
+    \sqrt{2}x_1x_2 \\
+    x_2^2
+  \end{bmatrix}
+$$
+
+Define a kernel function $K(x,y) = (x^\top y)^2$. Verify that $K(x,y) = \phi(x)^\top \phi(y)$. \\
+
+Can we use any function for $K$ ? Unfortunately no.
+\begin{enumerate}
+  \item A kernel $K(x,y)$ is a valid kernel function if it corresponds to an underlying $\phi(x)$[projecting $x$ to a high, possibly infinite dimensional space]. That is, $K(x,y) = \phi(x)^\top \phi(y)$
+  \item Let $K: \mathbb{R}^d \times \mathbb{R}^d \rightarrow \mathbb{R}$. For $K$ to be a valid kernel, the necessary and sufficient condition is that for any finite set $\{x_1,x_2,...,x_n\}$, the kernel matrix ($n \times n$ matrix, where the $i,j_{\text{th}}$ entry is $K(x_i,x_j)$) is \tc{symmetric and positive semi-definite} [MERCER's THEOREM].
+  \item If $K_1,K_2$ are valid kernels, then $K(x,y) = K_1(x,y) + K_2(x,y)$ and $K(x,y) = K_1(x,y)K_2(x,y)$ are also valid kernels.
+\end{enumerate}
+
+Examples of valid kernels
+\begin{itemize}
+  \item Polynomial kernel:
+        $$
+          K(x,y) = (c + x^\top y)^d, c > 0
+        $$
+  \item Radial basis function (RBF) kernel
+  \item Gaussian kernel
+        $$
+          K(x,y) = \exp(-\frac{||x-y||^2}{\sigma^2})
+        $$
+\end{itemize}
+
+\tc{Question}: Is $K(x,y) = ||x+y||^2$ a valid kernel ?

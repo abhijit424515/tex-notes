@@ -1,6 +1,6 @@
 
 
-\chapter{Logistic Regression}
+\chapter{Logistic Regression and Decision Tree Classification}
 \section{Introduction}
 
 Logistic regression involves a classification task, we instead of predicting a real value, we try to predict the label class for each input.
@@ -333,20 +333,220 @@ $$
 $$
 
 where $\Pb_{i,S}$ is the relative count of instances in $S$ with label i (the probability of randomly selecting an example of class i in $S$).\\
-What happens when all instances belong to the same class? $\Pb_{i,s}$ is 1 which implies that entropy of the dataset is 0.
+What happens when all instances belong to the same class? $\Pb_{i,s}$ is 1 which implies that entropy of the dataset is 0. \\
 
-\subsection{Splitting Criterion: Information Gain}
+\fbox{
+  \begin{minipage}{\textwidth}{
+      \tc{Entropy} The entropy defined above is conceptually very similar to that in physics and chemistry. Remember this (from JEE days)?
+      $$\Delta S_\text{mix} = -R(n_1+n_2)\bigg(\frac{n_1}{n_1+n_2}\ln \frac{n_1}{n_1+n_2} + \frac{n_2}{n_1+n_2}\ln \frac{n_2}{n_1+n_2}\bigg)$$
+      Its the entropy of mixing 2 gases ($n_1$ and $n_2$ mols). Apart from the multiplicative constants, the expression is the same as $H(S)$.
+    }
+  \end{minipage}
+}
 
-We are building towards deciding on how to choose the best attributes to build our decision tree such that when the data is split on their basis, we achieve maximum possible homogeneity in other words the maximum drop in the entropy within two tree levels. \\
+\section{Information Gain}
 
-\tc{Information gain}, is simply the reduction in entropy caused by partitioning the dataset $S$ according to a particular attribute.
-It determines the quality of splitting and helps to determine the order of attributes in the nodes of a decision tree. \\
+Finding the optimal way of splitting the data is NP-hard. So we resort to using heuristic greedy strategies to get a reasonably good split. \\
 
-Gain of a dataset $S$ for a attribute $a$ is defined as
+\fbox{
+  \begin{minipage}{\textwidth}
+    \tc{Heuristic} is a technique designed for problem solving more quickly when classic methods are too slow for finding an exact or approximate solution, or when classic methods fail to find any exact solution. This is achieved by trading optimality, completeness, accuracy, or precision for speed. In a way, it can be considered a shortcut.
+  \end{minipage}
+}
+\vspace{3mm}
+
+One common heuristic measure used in the context of decision trees is the \tc{information gain}. \\
+
+Suppose we now we choose an attribute $a$ from one of $x_1,\dots,x_n$. Suppose $a$ can attain values from $\text{Values}(a)$. All the elements of $s \in S$ which have $\gamma$ as the value of attribute $a$ will be placed in $S_\gamma$. Now, the information gain is defined as
 $$
-  Gain(S,a) =  H(S) -\sum_{v \in V(a)}\frac{|S_v|}{|S|} H(s_v)
+  \text{Gain}(S,a) = H(S) - \sum_{\gamma\in \text{Values}(a)}\frac{|S_\gamma|}{|S|}H(S_\gamma)
 $$
 
-where $H(S)$ is the entropy of the dataset before spliting on the basis of the attribute $a$, $S_v$ is the subset of dataset $S$ whose instances all have the attribute $a$ taking the value $v$, and thus the term subtracted from $H(S)$ is nothing but the weighted sum of the entropies of the dataset into which the dataset $S$ is split on the basis of attribute $a$. \\
+\tc{Intuition} : suppose we choose an ideal attribute that separates all the labels perfectly, then each of $H(S_\gamma)$ will be zero and information gain will be maximum. To gain information we need to reduce entropy by separating the elements. The factor $\frac{|S_\gamma|}{|S|}$ is needed to account for the fact that the set sizes are different.
 
-Thus for each node of the decision tree, we find the attribute with the maximum information gain and split on its basis in our decision tree.
+The attribute that gives the maximum information gain is the best attribute to split.
+$$a^* = \argmax_{a} \text{Gain}(S,a)$$
+Apart from information gain there are other heuristics like \tc{Gini impurity} that are commonly used in DTs. \\
+
+\fbox{
+  \begin{minipage}{\textwidth}{
+      \tc{Information Theory Basis} \\
+
+      The information gain that we defined above is called as \tc{mutual information} in information theory.
+      $$
+        I(X,Y) = H(Y) - H(Y|X) = H(X) - H(X|Y)
+      $$
+      where $H(X|Y)$ is the conditional entropy.
+      $$
+        H(X|Y) = \sum_i p(X = x_i) H(Y|X = x_i)
+      $$
+    }
+  \end{minipage}
+}
+\vspace{4mm}
+
+\tc{Example}: Consider a dataset (Table 1) with two boolean attributes $x_1$ and $x_2$ and label $y$. Let us find the optimal attribute to split.
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{|c|c|c|}
+    \hline
+    $x_1$ & $x_2$ & $y$ \\
+    \hline
+    1     & 1     & 1   \\
+    \hline
+    1     & 0     & 1   \\
+    \hline
+    1     & 1     & 1   \\
+    \hline
+    1     & 0     & 1   \\
+    \hline
+    0     & 1     & 1   \\
+    \hline
+    0     & 0     & 0   \\
+    \hline
+  \end{tabular}
+  \caption{Dataset for the example}
+\end{table}
+
+$$
+  H(S) = -\bigg(\frac{5}{6}\log_2 \frac{5}{6} + \frac{1}{6}\log_2 \frac{1}{6} \bigg) = 0.65
+$$
+$$
+  \text{Gain}(S,x_1) = H(S) - \bigg( \frac{4}{6} \times 0 + \frac{2}{6}\times1\bigg) = 0.32
+$$
+$$
+  \text{Gain}(S,x_2) = H(S) - \bigg( \frac{3}{6} \times 0 + \frac{3}{6}\times0.92\bigg) = 0.19
+$$
+
+Since information gain is maximum when split using $x_1$, it is best to split using $x_1$.
+\vspace{8mm}
+
+Till now we have considered the attributes of dataset to be discrete variables. What if they are continuous? In case of discrete attribute we can easily split using the different values of the attribute. For \tc{continuous} attributes, we need to identify thresholds ($\tau$) for the attribute values that we can use to design binary questions of the kind, ``Is attribute $a \le \tau$?" with yes/no answers. Here is the procedure to identify these thresholds:
+\begin{itemize}
+  \item Let $v_1,\dots,v_n$ be the values of attribute $a$ in the training set.
+  \item Sort the values in increasing order : $v_{i_1},\dots,v_{i_n}$.
+  \item Midpoint $m_j$ is defined as
+        $$m_j = \frac{v_{i_j} + v_{i_{j+1}}}{2}$$
+  \item Choose all such midpoints $m_j$ whose underlying instances on either side have different labels. These midpoints will serve as thresholds for this continuous attribute.
+\end{itemize}
+
+For example, consider an attribute $a$ that takes the values $\{10, 26, 40, 50, 100, 120\}$ across six training instances with corresponding labels $\{0, 0, 0, 1, 1, 0\}$. The midpoints are $\{18, 33, 45, 75, 110\}$, and the ones that will get picked up as thresholds are $\{45, 110\}$ since they are midpoints located between two instances with differing labels. Thus, the questions that can be asked relevant to attribute $a$ are ``Is $a \le 45$?" and ``Is $a > 110?$". \\
+
+\tc{Example:} Consider the dataset in Table 2 with two attributes $x_1,x_2$ which are real numbers. Each instance of the dataset has an associated binary label $y$ ($0$ or $1$).
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{|c|c|c|}
+    \hline
+    $x_1$ & $x_2$ & $y$ \\
+    \hline
+    0.1   & 0.53  & 1   \\
+    \hline
+    0.2   & 0.86  & 1   \\
+    \hline
+    0.25  & 0.36  & 0   \\
+    \hline
+    0.36  & 0.91  & 1   \\
+    \hline
+    0.47  & 0.87  & 1   \\
+    \hline
+    0.65  & 0.13  & 0   \\
+    \hline
+    0.71  & 0.82  & 0   \\
+    \hline
+    0.85  & 0.55  & 0   \\
+    \hline
+  \end{tabular}
+  \caption{Dataset for the example}
+  \label{tab:my_label}
+\end{table}
+
+Let us start by splitting using $x_1$. (See the figure below)
+\begin{figure}[ht]
+  \centering
+  \begin{tikzpicture}[
+      M/.style={draw, minimum size = 0.15cm, fill = white, shape = circle, inner sep=0pt}
+    ]
+    \draw (0,0) -- (10,0);
+    \draw (1,0) node [M, label=north:$v_1$, label=south:$1$] {};
+    \draw (2,0) node [M, label=north:$v_2$, label=south:$1$] {};
+    \draw (2.5,0) node [M, label=north:$v_3$, label=south:$0$] {};
+    \draw (3.6,0) node [M, label=north:$v_4$, label=south:$1$] {};
+    \draw (4.7,0) node [M, label=north:$v_5$, label=south:$1$] {};
+    \draw (6.5,0) node [M, label=north:$v_6$, label=south:$0$] {};
+    \draw (7.1,0) node [M, label=north:$v_7$, label=south:$0$] {};
+    \draw (8.5,0) node [M, label=north:$v_8$, label=south:$0$] {};
+    \draw [line width = 1pt] (5.4, 0.6) node [anchor = south] {break} -- (5.7,0.2) -- (5.5,-0.25) -- (5.65,-0.55);
+  \end{tikzpicture}
+  \caption{Visualisation of attribute $x_1$ of Table 2}
+  \label{fig:enter-label}
+\end{figure}
+
+To maximise information gain, we split between $v_5$ and $v_6$ using
+$$m_5 = \frac{v_5+v_6}{2} = 0.56$$
+
+\section{Stopping Criteria}
+Now we come to the second question, when do we stop splitting?  These are some of the stopping criteria that help avoid overfitting to the data.
+\begin{itemize}
+  \item Stop splitting if all the instances have the same label.
+  \item Do not split if the number of instances at a node is less than $k$ ($k$ is some constant).
+  \item Do not split if the number of leaf nodes exceed a certain threshold.
+  \item Do not split if information gain at a node is below a certain threshold.
+\end{itemize}
+The above criteria act as some form of regularization for the DTs. Limiting the max depth of the tree is another possible regularization.
+
+\section{Pruning}
+This is an alternate approach to tackle overfitting. Here we build the complete tree and then remove/prune some of the non-critical/redundant branches. To evaluate the performance after pruning, validation set is used.
+
+Pruning a node means replacing the subtree rooted at the node with a leaf node whose label is the max label of the node that was pruned. We can use a greedy approach to pruning:
+\begin{enumerate}
+  \item Pick a node which when pruned results in the highest gain in validation accuracy.
+  \item Repeat step 1 until there is no further improvement in validation accuracy.
+\end{enumerate}
+This is called as \tc{reduced error pruning}.
+
+\section{Random Forests (Brief Introduction)}
+
+Decision trees in the form that we studied till now, are very rarely used today. However, DTs are used in random forests (RTs), which is a very common method in \tc{ensemble} learning. An ensemble method uses a combination of methods/models to predict the final output. A random forest is an ensemble model which uses \tc{bootstrap aggregation} or \tc{bagging}. \\
+
+Bagging involves training an ensemble on bootstrapped data sets. Consider a dataset $\mathcal{D}$ having $n$ samples in it (that is $|\mathcal{D}| = n$). Now we generate $m$ datasets $\mathcal{D}_1,\dots,\mathcal{D}_m$ each of the same size $n$ ($|\mathcal{D}_1| = \dots = |\mathcal{D}_m| = n$) by randomly sampling (with replacement) from $\mathcal{D}$. As a result an instance  $d \in \mathcal{D}$ might occur zero, once or more than once in $\mathcal{D}_i$. Each of the $m$ datasets is used in training a separate model. The final prediction is made by \tc{aggregating} the results of each of the models (example averaging or voting). \\
+
+Random forests are bagged DTs, each of the $m$ datasets is made into a separate DT. In each of these DTs, we pick a random set $S$ (not too small not too large) of attributes to split the data. Taking very small set of attributes will result in losing too much information and taking too many will result in all the $m$ models being nearly the same. \\
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[t]{0.45\textwidth}
+    \begin{tikzpicture}[
+        M/.style={draw, rounded corners=.1cm, minimum size=0.5cm, fill = cyan!30}
+      ]
+      \node [M] {1}
+      child {node[M, fill = orange!30] {2}
+          edge from parent node [left] {$x_1+x_2 < 1$}}
+      child {node[M] {3}
+          child {node[M, fill = teal!20] {4}
+              edge from parent node [left] {$x_3 = \texttt{true}$}}
+          child {node[M, fill = orange!30] {5}
+              edge from parent node [right] {$x_3 = \texttt{false}$}}
+          edge from parent node [right] {$x_1+x_2 \geq 1$}};
+    \end{tikzpicture}
+    \caption{Tree 1}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.45\textwidth}
+    \begin{tikzpicture}[
+        M/.style={draw, rounded corners=.1cm, minimum size=0.5cm, fill = cyan!30}
+      ]
+      \node [M] {1}
+      child {node[M] {2}
+          child {node[M, fill = teal!20] {4}
+              edge from parent node [left] {$x_3 = \texttt{false}$}}
+          child {node[M, fill = orange!30] {5}
+              edge from parent node [right] {$x_3 = \texttt{true}$}}
+          edge from parent node [left] {$x_1+x_2 < 1$}}
+      child {node[M, fill = teal!20] {3}
+          edge from parent node [right] {$x_1+x_2 \geq 1$}};
+    \end{tikzpicture}
+    \caption{Tree 2}
+  \end{subfigure}
+  \caption{A random forest with $m = 2$}
+\end{figure}
